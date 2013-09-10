@@ -20,6 +20,9 @@ $[[files/bootstrap.py]]
 EOF
 python /tmp/bootstrap.py --check || exit 1
 
+# Set at least one PYTHON_ABIS flag to satisfy REQUIRED_USE of sys-apps/portage.
+export PYTHON_ABIS="$(portageq envvar PYTHON_ABIS | sed -e "s/.* //")"
+
 USE="-* build bootstrap" emerge portage || exit 1
 
 export USE="-* bootstrap `python /tmp/bootstrap.py --use`"
