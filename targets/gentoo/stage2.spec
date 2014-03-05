@@ -23,12 +23,12 @@ python /tmp/bootstrap.py --check || exit 1
 # Set at least one PYTHON_ABIS flag to satisfy REQUIRED_USE of sys-apps/portage.
 export PYTHON_ABIS="$(portageq envvar PYTHON_ABIS | sed -e "s/.* //")"
 
-USE="-* build bootstrap" emerge portage || exit 1
-
 export USE="-* bootstrap `python /tmp/bootstrap.py --use`"
+export PKGS="`python /tmp/bootstrap.py --pkglist`"
+USE="-* build bootstrap" emerge portage || exit 1
 # adding oneshot below so "libtool" doesn't get added to the world file... 
 # libtool should be in the system profile, but is not currently there it seems.
-emerge $eopts --oneshot `python /tmp/bootstrap.py --pkglist` || exit 1
+emerge $eopts --oneshot $PKGS || exit 1
 emerge --clean 
 emerge --prune sys-devel/gcc || exit 1
 
