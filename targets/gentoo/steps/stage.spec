@@ -1,3 +1,5 @@
+[collect ./epro.spec]
+
 [section steps]
 
 #[option parse/lax]
@@ -56,9 +58,18 @@ then
 		fi
 	fi
 fi
+if [ -e /etc/make.conf ]; then
+	mkconf=/etc/make.conf
+else
+	mkconf=/etc/portage/make.conf
+fi
+$[[steps/epro_setup]]
 if [ -e /var/tmp/cache/package ]
 then
 	export PKGDIR=/var/tmp/cache/package
+	if [ -n "$toolchain_version" ]; then
+		export PKGDIR="$PKGDIR/$toolchain_version"
+	fi
 	eopts="$[emerge/options] --usepkg"
 	export FEATURES="$FEATURES buildpkg"
 else
@@ -68,12 +79,16 @@ fi
 FEATURES="$FEATURES -sandbox"
 install -d /etc/portage
 # the quotes below prevent variable expansion of anything inside make.conf
-if [ "$[profile/format]" = "new" ]; then
-cat > /etc/portage/make.conf << "EOF"
+if [ -n "$[profile/subarch]" ]; then
+cat > $mkconf << "EOF"
+$[[files/make.conf.subarchprofile]]
+EOF
+elif [ "$[profile/format]" = "new" ]; then
+cat > $mkconf << "EOF"
 $[[files/make.conf.newprofile]]
 EOF
 else
-cat > /etc/portage/make.conf << "EOF"
+cat > $mkconf << "EOF"
 $[[files/make.conf.oldprofile]]
 EOF
 fi
@@ -107,7 +122,13 @@ $[[probe/setup:lax]]
 fi
 ]
 
-#[option parse/strict]
+clean: [
+#!/bin/bash
+# We do this in steps/clean instead of steps/chroot/clean because we have package
+# cache bind-mount in /var/tmp. So we need to ensure it's unmounted first.
+rm -rf $[path/chroot/stage]$[portage/ROOT]/var/tmp/*
+]
+
 
 [section steps/chroot]
 
@@ -121,6 +142,7 @@ if [ "$pf" = "new" ]; then
 	install -d /etc/portage/make.profile
 	cat > /etc/portage/make.profile/parent << EOF
 $[profile/arch:zap]
+$[profile/subarch:zap]
 $[profile/build:zap]
 $[profile/flavor:zap]
 EOF
@@ -196,11 +218,6 @@ else
 	pf="$[profile/format:zap]"
 	rm -f $ROOT/etc/make.conf $ROOT/etc/portage/make.conf
 	install -d $ROOT/etc/portage
-	if [ -e /etc/make.conf ]; then
-		mkconf=/etc/make.conf
-	else
-		mkconf=/etc/portage/make.conf
-	fi
 	if [ "$pf" = "new" ]; then
 		rm -f $ROOT/etc/portage/make.profile/parent || exit 3
 		install -d $ROOT/etc/portage/make.profile
@@ -210,13 +227,14 @@ else
 		cp -a /etc/make.profile $ROOT/etc || exit 4
 	fi
 	cp $mkconf $ROOT/etc/portage/make.conf || exit 4
+	ln -s portage/make.conf $ROOT/etc/make.conf
 fi
 # clean up temporary locations. Note that this also ends up removing our scripts, which
 # exist in /tmp inside the chroot. So after this cleanup, any execution inside the chroot
 # won't work. This is normally okay.
 
-rm -rf $ROOT/var/tmp/* $ROOT/tmp/* $ROOT/root/* $ROOT/usr/portage $ROOT/var/log/* || exit 5
-rm -rf $ROOT/var/cache/edb/dep/*
+rm -rf $ROOT/tmp/* $ROOT/root/* $ROOT/usr/portage $ROOT/var/log/* || exit 5
+rm -rf $ROOT/var/cache/*
 rm -f $ROOT/etc/.pwd.lock
 for x in passwd group shadow
 do
@@ -246,6 +264,7 @@ fi
 # locale-archive can be ~81 MB; this should shrink it to 2MB.
 rm -f /usr/lib*/locale/locale-archive
 locale-gen
+rm -rf $ROOT/run/*
 ]
 
 postclean: [

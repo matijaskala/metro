@@ -1,4 +1,4 @@
-[collect ./source/stage3.spec]
+[collect ./source/seed.spec]
 [collect ./target/stage3.spec]
 [collect ./steps/capture/tar.spec]
 
@@ -7,7 +7,7 @@
 chroot/run: [
 #!/bin/bash
 $[[steps/setup]]
-emerge --oneshot $eopts portage || exit 1
+#emerge --oneshot $eopts portage || exit 1
 export USE="$[portage/USE] bindist"
 emerge $eopts --deep --newuse -u @world || exit 1
 emerge --deep --newuse -u $eopts $[emerge/packages/force:zap] || exit 2
