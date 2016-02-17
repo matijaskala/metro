@@ -11,10 +11,6 @@ class: stage
 chroot: $[path/work]
 chroot/stage: $[path/work]$[portage/ROOT]
 
-[section portage]
-
-ACCEPT_KEYWORDS: $[portage/stable?]$[target/arch:zap]
-
 [section steps]
 
 unpack: [

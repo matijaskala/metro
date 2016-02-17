@@ -92,7 +92,8 @@ then
 	echo "Double check your profile settings and the 'packages' files."
 	exit 1
 else
-	echo "WE ARE BUILDING: ${buildpkgs}"
+	echo "WE ARE BUILDING: "
+	echo "${buildpkgs}"
 fi
 if [ "$[target/build]" == "funtoo-current" ] || [ "$[target/build]" == "funtoo-current-hardened"]; then
 	buildpkgs="=sys-libs/ncurses-6* $buildpkgs"

@@ -29,7 +29,10 @@ fi
 
 # copy bootloader and kernel
 install -d $cdroot/isolinux || exit 1
-cp "$[livecd/isolinux/binfile]" "$cdroot/isolinux" || exit 1
+cp "/usr/share/syslinux/isolinux.bin" "$cdroot/isolinux" || exit 1
+for module in $[livecd/isolinux/modules:lax] ; do
+cp "/usr/share/syslinux/$module.c32" "$cdroot/isolinux" || exit 1
+done
 cp -T $[path/chroot/stage]/boot/kernel* $cdroot/isolinux/kernel || exit 1
 cp -T $[path/chroot/stage]/boot/initramfs* $cdroot/isolinux/initramfs || exit 1
 cp -T $[path/chroot/stage]/boot/System.map* $cdroot/isolinux/System.map || exit 1
@@ -41,8 +44,8 @@ default $[target/build]
 
 label $[target/build]
   kernel kernel
-  append root=/dev/ram0 looptype=squashfs loop=/image.squashfs cdroot dosshd nogpm nosound nox nonfs quiet
-  append root=/dev/ram0 looptype=squashfs loop=/image.squashfs cdroot dosshd nogpm nosound nox nonfs quiet passwd=$[livecd/passwd:zap]
+  append root=/dev/ram0 looptype=squashfs loop=/image.squashfs cdroot dosshd overlayfs quiet
+  append root=/dev/ram0 looptype=squashfs loop=/image.squashfs cdroot dosshd overlayfs quiet passwd=$[livecd/passwd:zap]
   initrd initramfs
 EOF
 
@@ -59,7 +62,7 @@ fi
 # create iso image
 mkisofs -l \
 	-o $[path/mirror/target] \
-	-b isolinux/$(basename "$[livecd/isolinux/binfile]") \
+	-b isolinux/isolinux.bin \
 	-c isolinux/boot.cat \
 	-no-emul-boot -boot-load-size 4 -boot-info-table \
 	$cdroot/ || exit 1

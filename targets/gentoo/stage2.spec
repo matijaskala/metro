@@ -24,12 +24,12 @@ export PYTHON_ABIS="$(portageq envvar PYTHON_ABIS)"
 export PYTHON_TARGETS="$(portageq envvar PYTHON_TARGETS)"
 export PYTHON_SINGLE_TARGET="$(portageq envvar PYTHON_SINGLE_TARGET)"
 
-USE="-* build bootstrap" emerge portage || exit 1
-
 export USE="-* bootstrap `python /tmp/bootstrap.py --use`"
+export PKGS="`python /tmp/bootstrap.py --pkglist`"
+USE="-* build bootstrap" emerge portage || exit 1
 # adding oneshot below so "libtool" doesn't get added to the world file... 
 # libtool should be in the system profile, but is not currently there it seems.
-emerge $eopts --oneshot `python /tmp/bootstrap.py --pkglist` || exit 1
+emerge $eopts --oneshot $PKGS || exit 1
 emerge --clean 
 emerge --prune sys-devel/gcc || exit 1
 
