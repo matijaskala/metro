@@ -5,6 +5,7 @@ make.conf.oldprofile: [
 # Please consult /etc/portage/make.conf.example for a more detailed example.
 
 ACCEPT_KEYWORDS="$[portage/ACCEPT_KEYWORDS:zap]"
+ACCEPT_LICENSE="$[portage/ACCEPT_LICENSE:zap]"
 FEATURES="$[portage/FEATURES:zap]"
 CHOST="$[portage/CHOST:zap]"
 CFLAGS="$[portage/CFLAGS:zap]"
