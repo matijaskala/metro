@@ -13,6 +13,7 @@ export USE="$[portage/USE] bindist"
 emerge $eopts --nodeps sys-apps/baselayout || exit 1
 emerge $eopts system || exit 1
 # we are using a non-/ ROOT, so zapping the world file should not be necessary...
+emerge $eopts --oneshot $[emerge/packages/first:zap] || exit 1
 emerge $eopts $[emerge/packages:zap] || exit 1
 ]
 
