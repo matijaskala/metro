@@ -17,12 +17,21 @@ then
 fi
 
 emerge $eopts portage || exit 1
+USE="-*" emerge $eopts pambase || exit 1
 export USE="$[portage/USE] bindist"
 # handle perl upgrades
 perl-cleaner --modules || exit 1
 emerge $eopts -e system || exit 1
 
 emerge $eopts $[emerge/packages/first:zap] || exit 1
+echo "media-gfx/blender ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "net-im/pidgin ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "net-libs/webkit-gtk ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "=sci-libs/ldl-2.1.0 ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "sys-apps/shadow ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "www-client/google-chrome ~$[target/arch]" >> /etc/portage/package.accept_keywords
+echo "www-client/midori ~$[target/arch]" >> /etc/portage/package.accept_keywords
+emerge $eopts "sys-apps/shadow"
 
 # zap the world file and emerge packages
 rm -f /var/lib/portage/world || exit 2
@@ -41,7 +50,7 @@ do
 	rc-update add $s ${l}
 done
 
-if [ -e /usr/share/eselect/modules/vi.eselect ] && [ -e /bin/busybox ]
+if [ -e /usr/share/eselect/modules/vi.eselect ] && [ -x /bin/busybox ]
 then
 	eselect vi set busybox
 fi
